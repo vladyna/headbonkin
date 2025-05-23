@@ -5,7 +5,6 @@ public class HeadBounce : MonoBehaviour
     #region Seriliazed Fields
     [SerializeField] private Transform neckTransform;
     [SerializeField] private Transform headTransform;
-
     [SerializeField] private float wobbleAngle = 15f;
     [SerializeField] private float wobbleDuration = 0.2f;
     #endregion

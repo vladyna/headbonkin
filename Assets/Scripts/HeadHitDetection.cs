@@ -5,6 +5,7 @@ public class HeadHitDetector : MonoBehaviour
     #region Serialized Fields
     [SerializeField] private HeadBounce headBounce;
     [SerializeField] private AudioSource audioSource;
+    [SerializeField] private ParticleSystem particles;
     #endregion
 
     #region Public Methods
@@ -25,6 +26,17 @@ public class HeadHitDetector : MonoBehaviour
             audioSource.Stop();
         }
         audioSource.Play();
+        PlayShortPunchEffect();
+    }
+    void PlayShortPunchEffect()
+    {
+        particles.Play();
+        Invoke(nameof(StopEffect), 0.1f); 
+    }
+
+    void StopEffect()
+    {
+        particles.Stop();
     }
     #endregion
 }
