@@ -8,6 +8,7 @@ public class HeadHitDetector : MonoBehaviour
     [SerializeField] private HeadBounce headBounce;
     [SerializeField] private AudioSource audioSourcePrefab;
     [SerializeField] private ParticleSystem particlesPrefab;
+    [SerializeField] private DisappearingMessageUI disappearingMessageUI;
     #endregion
 
     #region Private Fields
@@ -25,11 +26,13 @@ public class HeadHitDetector : MonoBehaviour
     #region Unity's Methods
     private void OnTriggerEnter(Collider collision)
     {
-        Vector3 hitDirection = (transform.position - collision.transform.position).normalized;
+        Vector3 collisionPosition = collision.transform.position;
+        Vector3 hitDirection = (transform.position - collisionPosition).normalized;
 
         headBounce.Bounce(hitDirection);
-        PlayAudio(collision.transform.position);
-        PlayShortPunchEffect(collision.transform.position, hitDirection);
+        disappearingMessageUI.ShowText("*PUNCH*", collisionPosition);
+        PlayAudio(collisionPosition);
+        PlayShortPunchEffect(collisionPosition, hitDirection);
     }
     void PlayAudio(Vector3 position)
     {
