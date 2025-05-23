@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class FirstPersonPuncher : MonoBehaviour
@@ -6,17 +7,24 @@ public class FirstPersonPuncher : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float speed = 5f;
     [SerializeField] private float mouseSensitivity = 2f;
+    [SerializeField] private Animator animator;
 
     [Header("Punching")]
     [SerializeField] private Transform punchOrigin;
     [SerializeField] private float punchRange = 2f;
+    [SerializeField] private float punchDuration = 0.1f;
     [SerializeField] private float punchForce = 500f;
     [SerializeField] private LayerMask hitMask;
     [SerializeField] private KeyCode punchKey = KeyCode.Mouse0;
+
+    [SerializeField] private Transform rightHandTarget;
+    [SerializeField] private Transform leftHandTarget;
+    [SerializeField] private Transform hitTarget;
     #endregion
     #region Private Methods
     private CharacterController controller;
     private float pitch = 0f;
+    private bool _rightPunch = true;
     #endregion
     #region Unity's Methods
     private void Start()
@@ -32,7 +40,16 @@ public class FirstPersonPuncher : MonoBehaviour
 
         if (Input.GetKeyDown(punchKey))
         {
-            TryPunch();
+            if (_rightPunch)
+            {
+                ThrowPunch(rightHandTarget);
+                _rightPunch = false;
+            }
+            else
+            {
+                ThrowPunch(leftHandTarget);
+                _rightPunch = true;
+            }
         }
     }
     #endregion
@@ -42,7 +59,17 @@ public class FirstPersonPuncher : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
         Vector3 move = transform.right * h + transform.forward * v;
-        controller.SimpleMove(move * speed);
+        Vector3 movement = move * speed;
+        controller.SimpleMove(movement);
+        animator.SetFloat("Speed", movement.sqrMagnitude);
+    }
+
+    private void ThrowPunch(Transform ikTarget)
+    {
+        var position = ikTarget.localPosition;
+        Sequence posSequence = DOTween.Sequence();
+        posSequence.Append(ikTarget.DOLocalMove(hitTarget.localPosition, punchDuration).SetEase(Ease.OutQuad));
+        posSequence.Append(ikTarget.DOLocalMove(position, punchDuration).SetEase(Ease.InQuad));
     }
 
     private void LookAround()
@@ -55,18 +82,6 @@ public class FirstPersonPuncher : MonoBehaviour
 
         Camera.main.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
-    }
-
-    private void TryPunch()
-    {
-        if (Physics.Raycast(punchOrigin.position, punchOrigin.forward, out RaycastHit hit, punchRange, hitMask))
-        {
-            HeadHitDetector hitDetector = hit.collider.GetComponentInParent<HeadHitDetector>();
-            if (hitDetector != null)
-            {
-                hitDetector.OnHit(punchOrigin.forward * punchForce, hit.point);
-            }
-        }
     }
     #endregion
 }
