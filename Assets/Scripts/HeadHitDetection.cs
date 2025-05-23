@@ -1,17 +1,24 @@
+using System.Collections;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 public class HeadHitDetector : MonoBehaviour
 {
     #region Serialized Fields
     [SerializeField] private HeadBounce headBounce;
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private ParticleSystem particles;
+    [SerializeField] private AudioSource audioSourcePrefab;
+    [SerializeField] private ParticleSystem particlesPrefab;
     #endregion
 
-    #region Public Methods
-    public void OnHit(Vector3 force, Vector3 hitPoint)
+    #region Private Fields
+    private ObjectPool<AudioSource> audioPool;
+    private ObjectPool<ParticleSystem> particlesPool;
+    #endregion
+    #region Unity's Methods
+    private void Awake()
     {
-        headBounce.Bounce(force);
+        audioPool = new ObjectPool<AudioSource>(audioSourcePrefab, 5);
+        particlesPool = new ObjectPool<ParticleSystem>(particlesPrefab, 5);
     }
     #endregion
 
@@ -21,22 +28,37 @@ public class HeadHitDetector : MonoBehaviour
         Vector3 hitDirection = (transform.position - collision.transform.position).normalized;
 
         headBounce.Bounce(hitDirection);
-        if (audioSource.isPlaying)
-        {
-            audioSource.Stop();
-        }
-        audioSource.Play();
-        PlayShortPunchEffect();
+        PlayAudio(collision.transform.position);
+        PlayShortPunchEffect(collision.transform.position, hitDirection);
     }
-    void PlayShortPunchEffect()
+    void PlayAudio(Vector3 position)
     {
-        particles.Play();
-        Invoke(nameof(StopEffect), 0.1f); 
+        var audio = audioPool.GetFromPool();
+        audio.transform.position = position;
+        audio.Play();
+        StartCoroutine(StopAudioAfterDelay(audio, 0.5f));
     }
 
-    void StopEffect()
+    private IEnumerator StopAudioAfterDelay(AudioSource audio, float delay)
     {
+        yield return new WaitForSeconds(delay);
+        audio.Stop();
+        audioPool.ReturnToPool(audio);
+    }
+    void PlayShortPunchEffect(Vector3 position, Vector3 direction)
+    {
+        var particles = particlesPool.GetFromPool();
+        particles.transform.position = position;
+        particles.transform.rotation = Quaternion.LookRotation(direction);
+        particles.Play();
+        StartCoroutine(StopPunchEffectAfterDelay(particles, 0.1f));
+    }
+
+    private IEnumerator StopPunchEffectAfterDelay(ParticleSystem particles, float delay)
+    {
+        yield return new WaitForSeconds(delay);
         particles.Stop();
+        particlesPool.ReturnToPool(particles);
     }
     #endregion
 }
