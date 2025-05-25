@@ -2297,7 +2297,7 @@ MonoBehaviour:
   neckTransform: {fileID: 6515712193086314781}
   headTransform: {fileID: 5901452234757501031}
   wobbleAngle: 60
-  wobbleDuration: 0.1
+  wobbleDuration: 0.2
 --- !u!136 &5866666021340788896
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -3318,7 +3318,7 @@ PrefabInstance:
     - target: {fileID: 4581535884703755911, guid: 01ecf1eb983a0254ebbbc335552de71c, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 9100000, guid: 7c67ab3d9974184499dd0d52d0323314, type: 2}
     - target: {fileID: 6436679890549428247, guid: 01ecf1eb983a0254ebbbc335552de71c, type: 3}
       propertyPath: m_IsTrigger
       value: 0
